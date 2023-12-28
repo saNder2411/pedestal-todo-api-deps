@@ -50,7 +50,7 @@
     db-val))
 
 (def db-interceptor
-  {:name :db-interceptor
+  {:name  :db-interceptor
    :enter #(update % :request assoc :database @database)
    :leave (fn [ctx]
             (if-let [[operation & args] (:tx-data ctx)]
@@ -73,14 +73,14 @@
 ;;            :enter #(assoc % :response (ok (:request %)))})
 
 (def entity-render
-  {:name :entity-render
+  {:name  :entity-render
    :leave (fn [ctx]
             (if-let [item (:result ctx)]
               (assoc ctx :response (ok item))
               ctx))})
 
 (def list-create
-  {:name :list-create
+  {:name  :list-create
    :enter (fn [ctx]
             (let [nm (get-in ctx [:request :query-params :name] "Unnamed List")
                   new-list (make-list nm)
@@ -91,13 +91,12 @@
                 :tx-data [assoc db-id new-list])))})
 
 (def list-query-form
-  {:name :list-query-form
+  {:name  :list-query-form
    :leave (fn [ctx]
             (assoc ctx :result (get-in ctx [:request :database])))})
 
-
 (def list-view
-  {:name :list-view
+  {:name  :list-view
    :leave (fn [ctx]
             (let [id (get-in ctx [:request :path-params :list-id])
                   the-list (when id (find-list-by-id (get-in ctx [:request :database]) id))]
@@ -105,23 +104,22 @@
                       the-list (assoc :result the-list))))})
 
 (def list-delete
-  {:name :list-delete
+  {:name  :list-delete
    :enter (fn [ctx]
             (let [list-id (get-in ctx [:request :path-params :list-id])]
               (cond-> ctx
                       list-id (assoc :tx-data [delete-list list-id]))))})
-
+(+ 1 1)
 (def list-update
-  {:name :list-update
+  {:name  :list-update
    :enter (fn [ctx]
             (let [list-id (get-in ctx [:request :path-params :list-id])
                   upd-list (get-in ctx [:request :query-params] {})]
               (cond-> ctx
                       list-id (assoc :tx-data [update-list list-id upd-list]))))})
 
-
 (def list-item-view
-  {:name :list-item-view
+  {:name  :list-item-view
    :leave (fn [ctx]
             (let [list-id (get-in ctx [:request :path-params :list-id])
                   item-id (and list-id (get-in ctx [:request :path-params :item-id]))
@@ -131,7 +129,7 @@
                       item (assoc :result item))))})
 
 (def list-item-create
-  {:name :list-item-create
+  {:name  :list-item-create
    :enter (fn [ctx]
             (if-let [list-id (get-in ctx [:request :path-params :list-id])]
               (let [nm (get-in ctx [:request :query-params :name] "Unnamed Item")
@@ -143,21 +141,19 @@
               ctx))})
 
 (def list-item-delete
-  {:name :list-item-delete
+  {:name  :list-item-delete
    :enter (fn [ctx]
             (let [{:keys [list-id item-id]} (get-in ctx [:request :path-params])]
               (cond-> ctx
                       (and list-id item-id) (assoc :tx-data [delete-list-item list-id item-id]))))})
 
 (def list-item-update
-  {:name :list-item-update
+  {:name  :list-item-update
    :enter (fn [ctx]
             (let [{:keys [list-id item-id]} (get-in ctx [:request :path-params])
                   upd-item (get-in ctx [:request :query-params] {})]
               (cond-> ctx
                       (and list-id item-id) (assoc :tx-data [update-list-item list-id item-id upd-item]))))})
-
-
 
 (def routes
   (route/expand-routes
@@ -174,8 +170,8 @@
 
 (def service-map
   {::http/routes routes
-   ::http/type :jetty
-   ::http/port 8890})
+   ::http/type   :jetty
+   ::http/port   8890})
 
 (defn start []
   (-> service-map http/create-server http/start))
